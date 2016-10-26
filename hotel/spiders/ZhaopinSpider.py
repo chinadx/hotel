@@ -34,40 +34,36 @@ class ZhaopinSpider(scrapy.Spider):
         regx = re.compile('^http://company.zhaopin.com/.*?CC[0-9]{8,12}\.htm$')
 
         if regx.match(url) is not None:
-            print '-------------------hahahaha', url
             name = response.xpath('//div/h1/text()').extract()[0].encode('utf-8').strip()
-            id = url.rsplit('/')[-1].split('.')[0]
+            id_raw = url.rsplit('/')[-1].split('.')[0]
+            id = id_raw[id_raw.index('CC'):]
             site = url
-            # city = scrapy.Field()
-            # xingzhi = response.xpath('//table[@class="comTinyDes"]/tr[1]/td[2]/span/text()').extract()[0].encode('utf-8').strip()
-            # guimo = response.xpath('//table[@class="comTinyDes"]/tr[2]/td[2]/span/text()').extract()[0].encode('utf-8').strip()
-            # site = url
-            # hangye = response.xpath('//table[@class="comTinyDes"]/tr[4]/td[2]/span/text()').extract()[0].encode('utf-8').strip()
-            # address = response.xpath('//table[@class="comTinyDes"]/tr[5]/td[2]/span/text()').extract()[0].encode('utf-8').strip()
-            # latitude = scrapy.Field()
-            # longitude = scrapy.Field()
+            web = '未知'
+            xingzhi = '未知'
+            guimo = '未知'
+            hangye = '未知'
+            address = '未知'
             for tr in response.xpath('//table[@class="comTinyDes"]/tr'):
                 try:
                     type = tr.xpath('./td[1]/span/text()').extract()[0].encode('utf-8').strip()
                     if type == '公司网站：':
-                        continue
-                    value = tr.xpath('./td[2]/span/text()').extract()[0].encode('utf-8').strip()
+                        web = tr.xpath('./td[2]/span/a/@href').extract()[0].encode('utf-8').strip()
                     if type == '公司性质：':
-                        xingzhi = value
+                        xingzhi = tr.xpath('./td[2]/span/text()').extract()[0].encode('utf-8').strip()
                     if type == '公司规模：':
-                        guimo = value
+                        guimo = tr.xpath('./td[2]/span/text()').extract()[0].encode('utf-8').strip()
                     if type == '公司行业：':
-                        hangye = value
+                        hangye = tr.xpath('./td[2]/span/text()').extract()[0].encode('utf-8').strip()
                     if type == '公司地址：':
-                        address = value
+                        address = tr.xpath('./td[2]/span/text()').extract()[0].encode('utf-8').strip()
                 except Exception as e:
-                    None
+                    print e.message, url
 
             conn = pymysql.connect(host='192.168.1.7', user='root',
                         passwd='rootroot', db='spider', charset='utf8')
             cur = conn.cursor()
-            cur.execute("insert into zhaopin(id,name,xingzhi,guimo,hangye,site,address) values(%s,%s,%s,%s,%s,%s,%s)",
-                        (id, name, xingzhi,guimo,hangye,site,address ))
+            cur.execute("insert into zhaopin_1(id,name,xingzhi,guimo,hangye,site,web,address) values(%s,%s,%s,%s,%s,%s,%s,%s)",
+                        (id, name, xingzhi,guimo,hangye,site,web,address))
             cur.connection.commit()
 
         for link in response.xpath('//a/@href'):
