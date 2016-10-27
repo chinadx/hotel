@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from scrapy import log
 from twisted.enterprise import adbapi
 from datetime import datetime
 from hashlib import md5
@@ -56,15 +57,10 @@ class ZhaopinPipeline(object):
                 insert into zhaopin_1
                       (id,name,xingzhi,guimo,hangye,site,web,address)
                 values(%s,%s,%s,%s,%s,%s,%s,%s)
-            """,(item['id'], item['name'], item['xingzhi'], item['guimo'], item['hangye'],
-                   item['site'], item['web'], item['address'])
-                         )
-            #print """
-            #    insert into cnblogsinfo(linkmd5id, title, description, link, listUrl, updated)
-            #    values(%s, %s, %s, %s, %s, %s)
-            #""", (linkmd5id, item['title'], item['desc'], item['link'], item['listUrl'], now)
+                     """,(item['id'], item['name'], item['xingzhi'], item['guimo'], item['hangye'],
+                              item['site'], item['web'], item['address'])
+                        )
 
     # 异常处理
-    def _handle_error(self, failue, item, spider):
-        # log.err(failure)
-        print failue
+    def _handle_error(self, failure, item, spider):
+        log.err(failure)
