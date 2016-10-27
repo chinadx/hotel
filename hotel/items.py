@@ -26,6 +26,7 @@ class ZhaopinItem(scrapy.Item):
     city = scrapy.Field()
     xingzhi = scrapy.Field()
     guimo = scrapy.Field()
+    web = scrapy.Field()
     site = scrapy.Field()
     hangye = scrapy.Field()
     address = scrapy.Field()

@@ -58,13 +58,16 @@ class ZhaopinSpider(scrapy.Spider):
                         address = tr.xpath('./td[2]/span/text()').extract()[0].encode('utf-8').strip()
                 except Exception as e:
                     print e.message, url
-
-            conn = pymysql.connect(host='192.168.1.7', user='root',
-                        passwd='rootroot', db='spider', charset='utf8')
-            cur = conn.cursor()
-            cur.execute("insert into zhaopin_1(id,name,xingzhi,guimo,hangye,site,web,address) values(%s,%s,%s,%s,%s,%s,%s,%s)",
-                        (id, name, xingzhi,guimo,hangye,site,web,address))
-            cur.connection.commit()
+            item = ZhaopinItem()
+            item['id'] = id
+            item['name'] = name
+            item['xingzhi'] = xingzhi
+            item['guimo'] = guimo
+            item['hangye'] = hangye
+            item['address'] = address
+            item['site'] = site
+            item['web'] = web
+            yield item
 
         for link in response.xpath('//a/@href'):
             next_page = link.extract()
@@ -73,11 +76,3 @@ class ZhaopinSpider(scrapy.Spider):
                 next_page = response.urljoin(next_page)
                 if next_page[0:14] == 'http://company':
                     yield scrapy.Request(next_page, headers=self.headers, callback=self.parse)
-        return
-
-    def get_company(self, response):
-        company = ItemLoader(item=ZhaopinItem(), response=response)
-        company._add_value("id", response.url.rsplit('/')[-1].split('.')[0])
-        company.add_xpath("name", "//h1")
-        print '++++++++++++', company.name
-        yield company

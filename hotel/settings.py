@@ -71,9 +71,9 @@ CONCURRENT_REQUESTS_PER_IP = 16
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'hotel.pipelines.SomePipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'hotel.pipelines.ZhaopinPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -95,3 +95,10 @@ CONCURRENT_REQUESTS_PER_IP = 16
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+# start MySQL database configure setting
+MYSQL_HOST = 'localhost'
+MYSQL_DBNAME = 'spider'
+MYSQL_USER = 'root'
+MYSQL_PASSWD = 'rootroot'
+# end of MySQL database configure setting
