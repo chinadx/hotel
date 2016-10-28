@@ -14,11 +14,31 @@ class HotelItem(scrapy.Item):
     pass
 
 
-class ElongItem(scrapy.Item):
+class ElongHotelItem(scrapy.Item):
     id = scrapy.Field()
     name = scrapy.Field()
+    city = scrapy.Field()
+    city_code = scrapy.Field()
+    city_pinyin = scrapy.Field()
+    district = scrapy.Field()
+    longitude = scrapy.Field()
+    latitude = scrapy.Field()
+    cbd = scrapy.Field()
+    star = scrapy.Field()
     detail_url = scrapy.Field()
+    pic_url = scrapy.Field()
+    price = scrapy.Field()
+    point = scrapy.Field()
+    score = scrapy.Field()
+    comment_count = scrapy.Field()
+    create_time = scrapy.Field()
 
+
+class ElongRoomItem(scrapy.Item):
+    name = scrapy.Field()
+    size = scrapy.Field()
+    bed = scrapy.Field()
+    price = scrapy.Field()
 
 class ZhaopinItem(scrapy.Item):
     id = scrapy.Field()

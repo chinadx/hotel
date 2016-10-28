@@ -72,7 +72,7 @@ CONCURRENT_REQUESTS_PER_IP = 16
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'hotel.pipelines.ZhaopinPipeline': 300,
+   'hotel.pipelines.MySQLPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

@@ -5,6 +5,7 @@ from datetime import datetime
 from hashlib import md5
 import MySQLdb
 import MySQLdb.cursors
+from hotel.items import ZhaopinItem, ElongHotelItem, ElongRoomItem
 
 # Define your item pipelines here
 #
@@ -17,7 +18,8 @@ class HotelPipeline(object):
         return item
 
 
-class ZhaopinPipeline(object):
+# 记录item数据到mysql的管道
+class MySQLPipeline(object):
     def __init__(self, db_pool):
         self.db_pool = db_pool
 
@@ -37,13 +39,19 @@ class ZhaopinPipeline(object):
 
     # pipeline默认调用
     def process_item(self, item, spider):
-        d = self.db_pool.runInteraction(self._do_upinsert, item, spider)
-        d.addErrback(self._handle_error, item, spider)
-        d.addBoth(lambda _: item)
-        return d
+        if isinstance(item, ZhaopinItem):
+            d = self.db_pool.runInteraction(self._do_insert_company, item, spider)
+            d.addErrback(self._handle_error, item, spider)
+            d.addBoth(lambda _: item)
+            return d
+        if isinstance(item, ElongHotelItem):
+            pass
+        if isinstance(item, ElongRoomItem):
+            pass
+        return item
 
-    # 将每行更新或写入数据库中
-    def _do_upinsert(self, conn, item, spider):
+    # 处理招聘公司名录
+    def _do_insert_company(self, conn, item, spider):
         now = datetime.utcnow().replace(microsecond=0).isoformat(' ')
         conn.execute("""
                 select 1 from zhaopin_1 where id = %s
@@ -61,6 +69,24 @@ class ZhaopinPipeline(object):
                               item['site'], item['web'], item['address'])
                         )
 
+    # 处理艺龙酒店信息
+    def _do_insert_hotel(self, conn, item, spider):
+        now = datetime.utcnow().replace(microsecond=0).isoformat(' ')
+        conn.execute("""
+                select 1 from hotel_elong where id = %s
+        """, (item['id'], ))
+        ret = conn.fetchone()
+
+        if ret:
+            print 'hotel id = [', item['id'], ']has already been stored.'
+        else:
+            conn.execute("""
+                insert into zhaopin_1
+                      (id,name,xingzhi,guimo,hangye,site,web,address)
+                values(%s,%s,%s,%s,%s,%s,%s,%s)
+                     """,(item['id'], item['name'], item['xingzhi'], item['guimo'], item['hangye'],
+                              item['site'], item['web'], item['address'])
+                        )
     # 异常处理
     def _handle_error(self, failure, item, spider):
         log.err(failure)
