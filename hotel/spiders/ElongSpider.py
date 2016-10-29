@@ -14,6 +14,17 @@ class ElongSpider(scrapy.Spider):
         'm.elong.com',
     ]
 
+    headers = {
+        'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding':'gzip, deflate, sdch',
+        'Accept-Language':'zh-CN,zh;q=0.8',
+        'Connection':'keep-alive',
+        'Host':'m.elong.com',
+        'Cookie': 'H5CookieId=3d0e0644-02f8-456e-9c19-160b50175220; H5SessionId=404D272F81A5E8D0E662219BE4B6AE44; H5Channel=norefer-seo%2CSEO; indate=2016-10-29; outdate=2016-10-30; cityid=0101; route=0f07db7686b6b4eaf290911b85d8581f; CookieGuid=0e938606-241f-4242-8a50-096e8d9f6523; SessionGuid=f68feeb8-cc47-4c5e-bb01-c01088b2b2f7; Esid=8e1abcb5-c3c6-4cfd-9fc5-e0a78118719a; CitySearchHistory=0101%23%E5%8C%97%E4%BA%AC%E5%B8%82%23Beijing%23; com.eLong.CommonService.OrderFromCookieInfo=Status=1&Orderfromtype=2&Isusefparam=0&Pkid=0&Parentid=1000001&Coefficient=0.0&Makecomefrom=0&Cookiesdays=0&Savecookies=0&Priority=9000; ShHotel=CityID=0101&CityNameCN=%E5%8C%97%E4%BA%AC%E5%B8%82&CityName=%E5%8C%97%E4%BA%AC%E5%B8%82&OutDate=2016-10-31&CityNameEN=Beijing&InDate=2016-10-30; s_cc=true; s_visit=1; s_sq=%5B%5BB%5D%5D; _jzqco=%7C%7C%7C%7C%7C1.416803720.1477709610648.1477709613984.1477709620813.1477709613984.1477709620813.0.0.0.3.3; SHBrowseHotel=cn=91348508%2C%2C%2C%2C%2C%2C%3B; _pk_id.2624.9f06=d5a72b29382d08c4.1477709611.1.1477709621.1477709611.; _pk_ses.2624.9f06=*',
+        'Upgrade-Insecure-Requests':'1',
+        'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/53.0.2785.143 Chrome/53.0.2785.143 Safari/537.36',
+    }
+
     interface_url = ''
     page_idx = 1
 
@@ -106,7 +117,7 @@ class ElongSpider(scrapy.Spider):
             hotel_item['longitude'] = hotel.get("baiduLongitude")
 
             yield hotel_item
-            yield scrapy.Request(hotel_item['detail_url'], callback=self.parse_hotel_detail)
+            yield scrapy.Request(hotel_item['detail_url'], headers=self.headers, callback=self.parse_hotel_detail)
 
         self.page_idx += 1
         self.build_url(self.page_idx)
@@ -124,16 +135,25 @@ class ElongSpider(scrapy.Spider):
         # sizes = response.xpath('//div[@class="type"]/ul/li[contains(@class, "rooms")]//div[@class="room-info"]/span[1]/text()')
         # beds = response.xpath('//div[@class="type"]/ul/li[contains(@class, "rooms")]//div[@class="room-info"]/span[2]/text()')
         # prices = response.find('//div[@class="type"]/ul/li[contains(@class, "rooms")]//div[@class="price"]/span[@class="num"]/text()')
-        rooms = response.xpath('//div[@class="type"]/ul/li[contains(@class, "rooms")]')
+        # rooms = response.xpath('//div[@class="type"]/ul/li[contains(@class, "rooms")]')
+        # i = 0
+        # for room in rooms:
+        #     room_item = ElongRoomItem()
+        #     room_item['name'] = room.xpath('//div[@class="room"]/text()').extract()[i].strip()
+        #     room_item['size'] = room.xpath('//div[@class="room-info"]/span[1]/text()').extract()[i].strip()
+        #     room_item['bed'] = room.xpath('//div[@class="room-info"]/span[2]/text()').extract()[i].strip()
+        #     room_item['price'] = room.xpath('//div[@class="price"]/span[@class="num"]/text()').extract()[i].strip()
+        #     # 获取房态
+        #     if rooms.xpath('../li[contains(@class, "no")]'):
+        #         print 'full'
+        #     yield room_item
+        #     i += 1
+        rooms = response.xpath('//*[@id="uniq22"]/div[2]/section[1]/div[3]/ul/li')
         i = 0
         for room in rooms:
-            room_item = ElongRoomItem()
-            room_item['name'] = room.xpath('//div[@class="room"]/text()').extract()[i].strip()
-            room_item['size'] = room.xpath('//div[@class="room-info"]/span[1]/text()').extract()[i].strip()
-            room_item['bed'] = room.xpath('//div[@class="room-info"]/span[2]/text()').extract()[i].strip()
-            room_item['price'] = room.xpath('//div[@class="price"]/span[@class="num"]/text()').extract()[i].strip()
-            # 获取房态
-            if rooms.xpath('../li[contains(@class, "no")]'):
-                print 'full'
-            yield room_item
-            i += 1
+            name = room.xpath('/div[1]/div[1]/div[2]/div[1]').extract()[i].strip()
+            size = room.xpath('/div[1]/div[1]/div[2]/div[2]/span[1]').extract()[i].strip()
+            bed = room.xpath('/div[1]/div[1]/div[2]/div[2]/span[2]').extract()[i].strip()
+            price = room.xpath('/div[1]/div[2]/div/span[2]').extract()[i].strip()
+            print name,size,bed,price
+

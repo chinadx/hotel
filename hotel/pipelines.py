@@ -5,7 +5,7 @@ from datetime import datetime
 from hashlib import md5
 import MySQLdb
 import MySQLdb.cursors
-from hotel.items import ZhaopinItem, ElongHotelItem, ElongRoomItem
+from hotel.items import ZhaopinItem, ElongHotelItem, ElongRoomItem, ChinahrItem
 
 # Define your item pipelines here
 #
@@ -48,13 +48,18 @@ class MySQLPipeline(object):
             pass
         if isinstance(item, ElongRoomItem):
             pass
+        if isinstance(item, ChinahrItem):
+            d = self.db_pool.runInteraction(self._do_insert_chinahr_company, item, spider)
+            d.addErrback(self._handle_error, item, spider)
+            d.addBoth(lambda _: item)
+            return d
         return item
 
     # 处理招聘公司名录
     def _do_insert_company(self, conn, item, spider):
         now = datetime.utcnow().replace(microsecond=0).isoformat(' ')
         conn.execute("""
-                select 1 from zhaopin_1 where id = %s
+                select 1 from zhaopin where id = %s
         """, (item['id'], ))
         ret = conn.fetchone()
 
@@ -62,11 +67,30 @@ class MySQLPipeline(object):
             print 'compay id = [', item['id'], ']has already been stored.'
         else:
             conn.execute("""
-                insert into zhaopin_1
+                insert into zhaopin
                       (id,name,xingzhi,guimo,hangye,site,web,address)
                 values(%s,%s,%s,%s,%s,%s,%s,%s)
                      """,(item['id'], item['name'], item['xingzhi'], item['guimo'], item['hangye'],
                               item['site'], item['web'], item['address'])
+                        )
+
+    # 处理中华英才网公司名录
+    def _do_insert_chinahr_company(self, conn, item, spider):
+        now = datetime.utcnow().replace(microsecond=0).isoformat(' ')
+        conn.execute("""
+                select 1 from chinahr_company where id = %s
+        """, (item['id'],))
+        ret = conn.fetchone()
+
+        if ret:
+            print 'compay id = [', item['id'], ']has already been stored.'
+        else:
+            conn.execute("""
+                insert into chinahr_company
+                      (id,name,url,attributes,benefits,contact,intro)
+                values(%s,%s,%s,%s,%s,%s,%s)
+                     """, (item['id'], item['name'], item['url'], item['attributes'], item['benefits'],
+                           item['contact'], item['intro'])
                         )
 
     # 处理艺龙酒店信息
@@ -81,7 +105,7 @@ class MySQLPipeline(object):
             print 'hotel id = [', item['id'], ']has already been stored.'
         else:
             conn.execute("""
-                insert into zhaopin_1
+                insert into zhaopin
                       (id,name,xingzhi,guimo,hangye,site,web,address)
                 values(%s,%s,%s,%s,%s,%s,%s,%s)
                      """,(item['id'], item['name'], item['xingzhi'], item['guimo'], item['hangye'],

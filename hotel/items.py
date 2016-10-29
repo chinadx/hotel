@@ -52,3 +52,12 @@ class ZhaopinItem(scrapy.Item):
     address = scrapy.Field()
     latitude = scrapy.Field()
     longitude = scrapy.Field()
+
+class ChinahrItem(scrapy.Item):
+    id = scrapy.Field()
+    name = scrapy.Field()
+    url = scrapy.Field()
+    attributes = scrapy.Field()
+    contact = scrapy.Field()
+    benefits = scrapy.Field()
+    intro = scrapy.Field()
